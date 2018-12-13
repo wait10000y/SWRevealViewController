@@ -1249,11 +1249,11 @@ const int FrontViewPositionNone = 0xff;
     if ( xLocation < 0 )
     {
         if ( _rightViewController == nil ) xLocation = 0;
-        [self _rightViewDeploymentForNewFrontViewPosition:FrontViewPositionLeftSide]();
         [self _rearViewDeploymentForNewFrontViewPosition:FrontViewPositionLeftSide]();
+        [self _rightViewDeploymentForNewFrontViewPosition:FrontViewPositionLeftSide]();
     }
     
-    if ( xLocation > 0 )
+    if ( xLocation >= 0 )
     {
         if ( _rearViewController == nil ) xLocation = 0;
         [self _rightViewDeploymentForNewFrontViewPosition:FrontViewPositionRight]();
@@ -1344,9 +1344,28 @@ const int FrontViewPositionNone = 0xff;
 
 - (void)_handleRevealGestureStateCancelledWithRecognizer:(UIPanGestureRecognizer *)recognizer
 {    
+//     [self _restoreUserInteraction];
+//     [self _notifyPanGestureEnded];
+//     [self _dequeue];
+ 
+    UIView *frontView = _contentView.frontView;
+
+    CGFloat xLocation = frontView.frame.origin.x;
+
+        // depending on position we compute a simetric replacement of widths and positions
+    int symetry = xLocation<0 ? -1 : 1;
+
+        // initially we assume drag to left and default duration
+    FrontViewPosition frontViewPosition = FrontViewPositionLeft;
+    NSTimeInterval duration = _toggleAnimationDuration;
+
+        // symetric replacement of frontViewPosition
+    [self _getAdjustedFrontViewPosition:&frontViewPosition forSymetry:symetry];
+
+        // restore user interaction and animate to the final position
     [self _restoreUserInteraction];
     [self _notifyPanGestureEnded];
-    [self _dequeue];
+    [self _setFrontViewPosition:frontViewPosition withDuration:duration];
 }
 
 
